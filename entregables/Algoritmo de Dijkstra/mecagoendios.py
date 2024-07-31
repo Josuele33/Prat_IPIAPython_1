@@ -3,7 +3,6 @@ import random
 import matplotlib.pyplot as plt
 import networkx as nx
 from matplotlib.animation import FuncAnimation
-from IPython.display import Video, display
 
 def dijkstra(graph, start):
     priority_queue = [(0, start)]
@@ -38,34 +37,38 @@ def create_random_graph(num_vertices, num_edges):
     return graph
 
 def update_graph(num, G, pos, states, ax):
-    ax.clear()
-    nx.draw(G, pos, with_labels=True, ax=ax, node_color='skyblue', node_size=700, font_size=16)
+    ax.clear()  # Limpiar el gráfico
+    nx.draw_networkx_nodes(G, pos, ax=ax, node_color='skyblue', node_size=700)
+    nx.draw_networkx_edges(G, pos, ax=ax, width=1.0, alpha=0.5, edge_color='black')
+    
     current_vertex, current_shortest_paths, current_predecessors = states[num]
-
-    # Dibuja los bordes del camino más corto
+    
+    # Dibujar los bordes del camino más corto
     for vertex in current_shortest_paths:
         if current_predecessors[vertex] is not None:
             nx.draw_networkx_edges(G, pos, edgelist=[(vertex, current_predecessors[vertex])], width=2.5, alpha=0.6, edge_color='r', ax=ax)
 
-    # Dibuja las etiquetas de los nodos
+    # Dibujar etiquetas de los nodos
     labels = {vertex: f"{vertex}\n{current_shortest_paths[vertex]}" for vertex in current_shortest_paths}
     nx.draw_networkx_labels(G, pos, labels=labels, font_size=16, font_color='black', ax=ax)
+    
     ax.set_title(f"Paso {num + 1}: Visitando nodo {current_vertex}")
 
 def highlight_shortest_path(G, pos, predecessors, ax):
     ax.clear()
-    nx.draw(G, pos, with_labels=True, ax=ax, node_color='skyblue', node_size=700, font_size=16)
+    nx.draw_networkx_nodes(G, pos, ax=ax, node_color='skyblue', node_size=700)
+    nx.draw_networkx_edges(G, pos, ax=ax, width=1.0, alpha=0.5, edge_color='black')
 
-    # Resalta los bordes del camino más corto
+    # Resaltar los bordes del camino más corto
     shortest_path_edges = [(vertex, predecessors[vertex]) for vertex in predecessors if predecessors[vertex] is not None]
     nx.draw_networkx_edges(G, pos, edgelist=shortest_path_edges, width=2.5, alpha=0.6, edge_color='g', ax=ax)
 
-    # Dibuja las etiquetas finales de los nodos
+    # Dibujar etiquetas finales de los nodos
     final_labels = {vertex: vertex for vertex in predecessors}
     nx.draw_networkx_labels(G, pos, labels=final_labels, font_size=16, font_color='black', ax=ax)
     ax.set_title("Camino más corto resaltado")
 
-# Define el grafo
+# Definir el grafo
 graph = {
     'A': {'B': 8, 'C': 6, 'D': 2, 'E': 7},
     'B': {'A': 8, 'C': 1, 'F': 4, 'G': 9},
@@ -95,10 +98,10 @@ graph = {
     'Z': {'U': 5, 'Y': 3, 'E': 2}
 }
 
-# Ejecuta el algoritmo de Dijkstra
-shortest_paths, predecessors, states = dijkstra(graph, 'A') # Empieza desde la letra A
+# Ejecutar el algoritmo de Dijkstra
+shortest_paths, predecessors, states = dijkstra(graph, 'A')
 
-# Crea el grafo para la visualización
+# Crear el grafo para visualización
 G = nx.Graph()
 for vertex in graph:
     for neighbor, weight in graph[vertex].items():
@@ -107,23 +110,16 @@ for vertex in graph:
 pos = nx.spring_layout(G)
 fig, ax = plt.subplots()
 
-# Crea la animación
+# Crear la animación
 ani = FuncAnimation(fig, update_graph, frames=len(states), fargs=(G, pos, states, ax), interval=1000, repeat=False)
 
-# Guarda la animación como video
+# Guardar la animación como video
 try:
     ani.save('dijkstra_animation.mp4', writer='ffmpeg', fps=1)
     print("Animación guardada como 'dijkstra_animation.mp4'.")
 except Exception as e:
     print(f"Error al guardar la animación: {e}")
 
-# Muestra el video
-try:
-    video = Video("dijkstra_animation.mp4", embed=True)
-    display(video)
-except Exception as e:
-    print(f"Error al reproducir el video: {e}")
-
-# Resalta el camino más corto
+# Resaltar el camino más corto
 highlight_shortest_path(G, pos, predecessors, ax)
 plt.show()
